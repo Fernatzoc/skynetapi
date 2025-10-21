@@ -1,48 +1,57 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
 trigger:
 - main
 
 pool: my-personal-computer
 
 variables:
-  solution: '**/*.sln'
-  proyecto: 'MinimalAPIPeliculas/MinimalAPIPeliculas.csproj'
-  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  proyecto: 'MinimalAPIPeliculas/MinimalAPIPeliculas.csproj'
 
 steps:
-
 - task: UseDotNet@2
-  displayName: 'Instalar .NET 8'
+  displayName: 'Instalar .NET 9 SDK'
   inputs:
     packageType: 'sdk'
     version: '9.0.x'
 
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
+# (Opcional pero recomendado) limpiar entorno PowerShell en el agente
+- task: PowerShell@2
+  displayName: 'Entorno PowerShell limpio'
   inputs:
-    restoreSolution: '$(solution)'
-
-- task: VSBuild@1
-  displayName: 'Compilar solucion'
-  inputs:
-    solution: '**\*.sln'
-    configuration:  '$(buildConfiguration)'
+    targetType: 'inline'
+    pwsh: false             # fuerza Windows PowerShell 5.1
+    script: |
+      Write-Host "PSVersion:"; $PSVersionTable
+      $machine = [Environment]::GetEnvironmentVariable('PSModulePath','Machine')
+      $user    = [Environment]::GetEnvironmentVariable('PSModulePath','User')
+      $env:PSModulePath = "$machine;$user"
+      Write-Host "PSModulePath:"; $env:PSModulePath
 
 - task: DotNetCoreCLI@2
-  displayName: 'Construyendo los artefactos...'
+  displayName: 'Restore'
+  inputs:
+    command: 'restore'
+    projects: '$(proyecto)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
+  inputs:
+    command: 'build'
+    projects: '$(proyecto)'
+    arguments: '--configuration $(buildConfiguration) --no-restore'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Publish'
   inputs:
     command: 'publish'
     publishWebProjects: false
-    projects: $(proyecto)
-    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/webapp --runtime win-x86 --self-contained'
+    projects: '$(proyecto)'
+    arguments: '--configuration $(buildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)/webapp --runtime win-x64 --self-contained'
     zipAfterPublish: false
     modifyOutputPath: false
 
 - task: PublishBuildArtifacts@1
-  displayName: 'Publicando los artefactos'
+  displayName: 'Publicar artefactos'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/webapp'
+    ArtifactName: 'drop'
