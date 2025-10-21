@@ -14,19 +14,6 @@ steps:
     packageType: 'sdk'
     version: '9.0.x'
 
-# (Opcional pero recomendado) limpiar entorno PowerShell en el agente
-- task: PowerShell@2
-  displayName: 'Entorno PowerShell limpio'
-  inputs:
-    targetType: 'inline'
-    pwsh: false             # fuerza Windows PowerShell 5.1
-    script: |
-      Write-Host "PSVersion:"; $PSVersionTable
-      $machine = [Environment]::GetEnvironmentVariable('PSModulePath','Machine')
-      $user    = [Environment]::GetEnvironmentVariable('PSModulePath','User')
-      $env:PSModulePath = "$machine;$user"
-      Write-Host "PSModulePath:"; $env:PSModulePath
-
 - task: DotNetCoreCLI@2
   displayName: 'Restore'
   inputs:
