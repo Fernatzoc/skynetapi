@@ -64,7 +64,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () => "Hello World! CD/CI");
 
 app.MapGroup("/clientes").MapClientes();
 app.MapGroup("/usuarios").MapUsuarios();
