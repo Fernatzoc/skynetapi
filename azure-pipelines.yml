@@ -1,44 +1,42 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
 trigger:
 - main
 
 pool: my-personal-computer
 
 variables:
+  solution: '**/*.sln'
+  proyecto: '**/*.csproj'
+  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  proyecto: 'MinimalAPIPeliculas/MinimalAPIPeliculas.csproj'
 
 steps:
+
 - task: UseDotNet@2
-  displayName: 'Instalar .NET 9 SDK'
+  displayName: 'Instalar .NET '
   inputs:
     packageType: 'sdk'
     version: '9.0.x'
 
-- task: DotNetCoreCLI@2
-  displayName: 'Restore'
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
   inputs:
-    command: 'restore'
-    projects: '$(proyecto)'
+    restoreSolution: '$(solution)'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Build'
-  inputs:
-    command: 'build'
-    projects: '$(proyecto)'
-    arguments: '--configuration $(buildConfiguration) --no-restore'
-
-- task: DotNetCoreCLI@2
-  displayName: 'Publish'
+  displayName: 'Construyendo los artefactos...'
   inputs:
     command: 'publish'
     publishWebProjects: false
-    projects: '$(proyecto)'
-    arguments: '--configuration $(buildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)/webapp --runtime win-x64 --self-contained'
+    projects: $(proyecto)
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --runtime win-x86 --self-contained'
     zipAfterPublish: false
     modifyOutputPath: false
 
 - task: PublishBuildArtifacts@1
-  displayName: 'Publicar artefactos'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/webapp'
-    ArtifactName: 'drop'
+  displayName: 'Publicando los artefactos'
