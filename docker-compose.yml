@@ -1,0 +1,21 @@
+services:
+  webapp:
+    container_name: skyNetApp
+    build:
+      dockerfile: Dockerfile
+    networks:
+      - apps_network
+    volumes:
+      - dataprotection-keys:/root/.aspnet/DataProtection-Keys
+      - static-files:/app/wwwroot
+
+networks:
+  apps_network:
+    driver: bridge
+    external: true
+
+volumes:
+  dataprotection-keys:
+    driver: local
+  static-files:
+    driver: local
