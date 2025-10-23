@@ -1,17 +1,15 @@
-﻿﻿using FluentValidation;
+﻿using FluentValidation;
 using SkyNetApi.DTOs;
 
 namespace SkyNetApi.Validaciones
 {
-    public class CredencialesUsuarioDTOValidador: AbstractValidator<CredencialesUsuarioDTO>
+    public class ActualizarPerfilOtroUsuarioDTOValidador : AbstractValidator<ActualizarPerfilOtroUsuarioDTO>
     {
-        public CredencialesUsuarioDTOValidador()
+        public ActualizarPerfilOtroUsuarioDTOValidador()
         {
-            RuleFor(x => x.Email).NotEmpty()
-                .MaximumLength(256)
-                .EmailAddress();
-
-            RuleFor(x => x.Password).NotEmpty();
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("El email es requerido")
+                .EmailAddress().WithMessage("El formato del email no es válido");
 
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("El primer nombre es requerido")
@@ -35,3 +33,4 @@ namespace SkyNetApi.Validaciones
         }
     }
 }
+

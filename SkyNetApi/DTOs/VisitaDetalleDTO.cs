@@ -1,7 +1,14 @@
-﻿﻿﻿namespace SkyNetApi.DTOs
+﻿namespace SkyNetApi.DTOs
 {
-    public class CrearClienteDTO
+    public class VisitaDetalleDTO
     {
+        public VisitaDTO Visita { get; set; } = null!;
+        public ClienteDetalleDTO Cliente { get; set; } = null!;
+    }
+
+    public class ClienteDetalleDTO
+    {
+        public int Id { get; set; }
         public string PrimerNombre { get; set; } = null!;
         public string? SegundoNombre { get; set; }
         public string? TercerNombre { get; set; }
@@ -9,8 +16,10 @@
         public string? SegundoApellido { get; set; }
         public string Telefono { get; set; } = null!;
         public string CorreoElectronico { get; set; } = null!;
-        public double Latitud { get; set; }
-        public double Longitud { get; set; }
+        public decimal Latitud { get; set; }
+        public decimal Longitud { get; set; }
         public string Direccion { get; set; } = null!;
+        public bool Estado { get; set; }
     }
 }
+

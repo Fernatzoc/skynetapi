@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using SkyNetApi.DTOs;
@@ -16,7 +16,7 @@ namespace SkyNetApi.Endpoints
             group.MapGet("/{id:int}", ObtenerClientePorId);
             group.MapGet("/", ObtenerClientes).RequireAuthorization();
             group.MapPut("/{id:int}", ActualizarCliente);
-            group.MapDelete("/clientes/{id:int}", EliminarCliente);
+            group.MapDelete("/{id:int}", EliminarCliente);
 
 
             return group;

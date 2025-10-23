@@ -1,4 +1,4 @@
-﻿using Dapper;
+﻿﻿﻿using Dapper;
 using MySqlConnector;
 using SkyNetApi.Entidades;
 using System.Data;
@@ -17,8 +17,13 @@ namespace SkyNetApi.Repositorios
         {
             using (var connection = new MySqlConnection(connectionString))
             {
-                var clientes = await connection.QueryAsync<Cliente>("db_skynet.proObtenerClientes", 
-                    commandType: CommandType.StoredProcedure);
+                var clientes = await connection.QueryAsync<Cliente>(
+                    @"SELECT idCliente, primerNombre, segundoNombre, tercerNombre, 
+                             primerApellido, segundoApellido, telefono, correoElectronico,
+                             latitud, longitud, direccion, estado
+                      FROM db_skynet.cliente 
+                      WHERE estado = TRUE 
+                      ORDER BY primerNombre");
                 return clientes.ToList();
             }
         }
@@ -27,7 +32,10 @@ namespace SkyNetApi.Repositorios
         {
             using (var connection = new MySqlConnection(connectionString))
             {
-                var cliente = await connection.QueryFirstOrDefaultAsync<Cliente>(@"SELECT * FROM db_skynet.cliente WHERE idCliente = @idCliente", new { idCliente });
+                var cliente = await connection.QueryFirstOrDefaultAsync<Cliente>(
+                    @"SELECT * FROM db_skynet.cliente 
+                      WHERE idCliente = @idCliente AND estado = TRUE", 
+                    new { idCliente });
             
                 return cliente;
             }
@@ -37,20 +45,28 @@ namespace SkyNetApi.Repositorios
         {
             using (var connection = new MySqlConnection(connectionString))
             {
-                var idCliente = await connection.QuerySingleAsync<int>(@"proAccionClientes", new
-                {
-                    _idCliente = (int?)null, // <- nombre con guión bajo
-                    _primerNombre = cliente.PrimerNombre,
-                    _segundoNombre = cliente.SegundoNombre,
-                    _tercerNombre = cliente.TercerNombre,
-                    _primerApellido = cliente.PrimerApellido,
-                    _segundoApellido = cliente.SegundoApellido,
-                    _telefono = cliente.Telefono,
-                    _latitud = cliente.Latitud,
-                    _longitud = cliente.Longitud,
-                    _direccion = cliente.Direccion
-                },
-                    commandType: CommandType.StoredProcedure);
+                var idCliente = await connection.QuerySingleAsync<int>(
+                    @"INSERT INTO db_skynet.cliente 
+                      (primerNombre, segundoNombre, tercerNombre, primerApellido, 
+                       segundoApellido, telefono, correoElectronico, latitud, longitud, direccion, estado)
+                      VALUES 
+                      (@PrimerNombre, @SegundoNombre, @TercerNombre, @PrimerApellido, 
+                       @SegundoApellido, @Telefono, @CorreoElectronico, @Latitud, @Longitud, @Direccion, @Estado);
+                      SELECT LAST_INSERT_ID();",
+                    new
+                    {
+                        cliente.PrimerNombre,
+                        SegundoNombre = cliente.SegundoNombre ?? string.Empty,
+                        TercerNombre = cliente.TercerNombre ?? string.Empty,
+                        cliente.PrimerApellido,
+                        SegundoApellido = cliente.SegundoApellido ?? string.Empty,
+                        cliente.Telefono,
+                        cliente.CorreoElectronico,
+                        cliente.Latitud,
+                        cliente.Longitud,
+                        cliente.Direccion,
+                        Estado = true
+                    });
 
                 cliente.IdCliente = idCliente;
                 return idCliente;
@@ -62,7 +78,11 @@ namespace SkyNetApi.Repositorios
         {
             using (var conexion = new MySqlConnection(connectionString))
             {
-                var existe = await conexion.QuerySingleAsync<bool>(@"SELECT COUNT(*) > 0 AS existe FROM db_skynet.cliente WHERE idCliente = @id;", new {id});
+                var existe = await conexion.QuerySingleAsync<bool>(
+                    @"SELECT COUNT(*) > 0 AS existe 
+                      FROM db_skynet.cliente 
+                      WHERE idCliente = @id AND estado = TRUE;", 
+                    new {id});
 
                 return existe;
             }
@@ -73,10 +93,31 @@ namespace SkyNetApi.Repositorios
             using (var conexion = new MySqlConnection(connectionString))
             {
                 await conexion.ExecuteAsync(@"UPDATE db_skynet.cliente
-SET primerNombre = @primerNombre,
-    segundoNombre = @segundoNombre,
-    tercerNombre = @tercerNombre
-WHERE idCliente = @idCliente;", cliente);
+SET primerNombre = @PrimerNombre,
+    segundoNombre = @SegundoNombre,
+    tercerNombre = @TercerNombre,
+    primerApellido = @PrimerApellido,
+    segundoApellido = @SegundoApellido,
+    correoElectronico = @CorreoElectronico,
+    telefono = @Telefono,
+    latitud = @Latitud,
+    longitud = @Longitud,
+    direccion = @Direccion,
+    fechaActualizacion = NOW()
+WHERE idCliente = @IdCliente;", new
+                {
+                    cliente.IdCliente,
+                    cliente.PrimerNombre,
+                    SegundoNombre = cliente.SegundoNombre ?? string.Empty,
+                    TercerNombre = cliente.TercerNombre ?? string.Empty,
+                    cliente.PrimerApellido,
+                    SegundoApellido = cliente.SegundoApellido ?? string.Empty,
+                    cliente.CorreoElectronico,
+                    cliente.Telefono,
+                    cliente.Latitud,
+                    cliente.Longitud,
+                    cliente.Direccion
+                });
             }
         }
 
@@ -84,7 +125,12 @@ WHERE idCliente = @idCliente;", cliente);
         {
             using (var conexion = new MySqlConnection(connectionString))
             {
-                await conexion.ExecuteAsync(@"DELETE FROM db_skynet.cliente WHERE idCliente = @idCliente;", new { idCliente });
+                await conexion.ExecuteAsync(
+                    @"UPDATE db_skynet.cliente 
+                      SET estado = FALSE, 
+                          fechaActualizacion = NOW() 
+                      WHERE idCliente = @idCliente;", 
+                    new { idCliente });
             }
         }
     }
