@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿﻿﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -61,6 +61,14 @@ namespace SkyNetApi.Endpoints
 
             group.MapGet("/tecnicos-asignados/{idSupervisor}", ObtenerTecnicosAsignados)
                 .RequireAuthorization(policy => policy.RequireRole(Roles.Supervisor, Roles.Administrador));
+
+            group.MapPut("/cambiarcontrasenia", CambiarContrasenia)
+                .AddEndpointFilter<FiltroValidaciones<CambiarContraseniaDTO>>()
+                .RequireAuthorization();
+
+            group.MapPut("/restablecercontrasenia", RestablecerContrasenia)
+                .AddEndpointFilter<FiltroValidaciones<RestablecerContraseniaDTO>>()
+                .RequireAuthorization(policy => policy.RequireRole(Roles.Administrador));
 
             return group;
         }
@@ -446,9 +454,11 @@ namespace SkyNetApi.Endpoints
                 return TypedResults.NotFound();
             }
 
-            // Remover la contraseña actual y establecer la nueva (solo admins)
-            var tokenReset = await userManager.GeneratePasswordResetTokenAsync(usuario);
-            var resultado = await userManager.ResetPasswordAsync(usuario, tokenReset, restablecerDTO.NuevaContrasenia);
+            // Remover la contraseña actual
+            await userManager.RemovePasswordAsync(usuario);
+            
+            // Establecer la nueva contraseña
+            var resultado = await userManager.AddPasswordAsync(usuario, restablecerDTO.NuevaContrasenia);
 
             if (resultado.Succeeded)
             {

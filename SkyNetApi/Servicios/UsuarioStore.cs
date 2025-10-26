@@ -1,4 +1,4 @@
-﻿﻿﻿using Microsoft.AspNetCore.Identity;
+﻿﻿﻿﻿using Microsoft.AspNetCore.Identity;
 using SkyNetApi.Repositorios;
 using System.Security.Claims;
 
@@ -152,9 +152,10 @@ namespace SkyNetApi.Servicios
             throw new NotImplementedException();
         }
 
-        public Task<IdentityResult> UpdateAsync(IdentityUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> UpdateAsync(IdentityUser user, CancellationToken cancellationToken)
         {
-            return Task.FromResult(IdentityResult.Success);
+            await repositorioUsuarios.ActualizarUsuario(user);
+            return IdentityResult.Success;
         }
 
         // Implementación de IUserRoleStore

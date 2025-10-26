@@ -1,4 +1,4 @@
-﻿﻿using Microsoft.AspNetCore.Identity;
+﻿﻿﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
 namespace SkyNetApi.Repositorios
@@ -33,5 +33,8 @@ namespace SkyNetApi.Repositorios
         
         // Método para obtener técnicos asignados a un supervisor
         Task<List<(string Id, string Email, string FirstName, string? MiddleName, string LastName, string? SecondSurname, string Phone)>> ObtenerTecnicosAsignados(string idSupervisor);
+        
+        // Método para actualizar usuario (contraseña, etc)
+        Task ActualizarUsuario(IdentityUser usuario);
     }
 }

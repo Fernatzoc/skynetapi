@@ -1,4 +1,4 @@
-﻿using Dapper;
+﻿﻿using Dapper;
 using Microsoft.AspNetCore.Identity;
 using MySqlConnector;
 using System.Security.Claims;
@@ -329,6 +329,30 @@ namespace SkyNetApi.Repositorios
                 }
 
                 return resultado;
+            }
+        }
+
+        public async Task ActualizarUsuario(IdentityUser usuario)
+        {
+            using (var conexion = new MySqlConnection(connectionString))
+            {
+                await conexion.ExecuteAsync(
+                    @"UPDATE db_skynet.usuarios 
+                      SET email = @Email,
+                          normalized_email = @NormalizedEmail,
+                          user_name = @UserName,
+                          normalized_user_name = @NormalizedUserName,
+                          password_hash = @PasswordHash
+                      WHERE id = @Id",
+                    new
+                    {
+                        usuario.Id,
+                        usuario.Email,
+                        usuario.NormalizedEmail,
+                        usuario.UserName,
+                        usuario.NormalizedUserName,
+                        usuario.PasswordHash
+                    });
             }
         }
     }
